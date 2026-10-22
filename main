@@ -1,0 +1,262 @@
+#include <algorithm>
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <numeric>
+#include <sstream>
+#include <string>
+#include <vector>
+
+namespace {
+constexpr double PI = 3.14159265358979323846;
+constexpr double EPS = 1e-12;
+
+void clearInput() {
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
+double readDouble(const std::string& prompt) {
+    while (true) {
+        std::cout << prompt;
+        double value{};
+        if (std::cin >> value) {
+            if (std::isfinite(value)) return value;
+            std::cout << "Please enter a finite number.\n";
+        } else {
+            std::cout << "Invalid input. Try again.\n";
+            clearInput();
+        }
+    }
+}
+
+int readInt(const std::string& prompt, int minValue, int maxValue) {
+    while (true) {
+        std::cout << prompt;
+        int value{};
+        if (std::cin >> value && value >= minValue && value <= maxValue) return value;
+        std::cout << "Enter an integer from " << minValue << " to " << maxValue << ".\n";
+        clearInput();
+    }
+}
+
+bool nearlyZero(double x) { return std::abs(x) < EPS; }
+
+void printResult(const std::string& label, double value) {
+    if (!std::isfinite(value)) {
+        std::cout << "Result is outside the supported numeric range.\n";
+        return;
+    }
+    std::cout << label << std::setprecision(12) << value << '\n';
+}
+
+void basicArithmetic() {
+    std::cout << "\n-- Basic arithmetic --\n";
+    const double a = readDouble("First number: ");
+    const double b = readDouble("Second number: ");
+    std::cout << "1) Add  2) Subtract  3) Multiply  4) Divide  5) Power\n";
+    switch (readInt("Choose operation: ", 1, 5)) {
+        case 1: printResult("Result: ", a + b); break;
+        case 2: printResult("Result: ", a - b); break;
+        case 3: printResult("Result: ", a * b); break;
+        case 4:
+            if (nearlyZero(b)) std::cout << "Error: division by zero.\n";
+            else printResult("Result: ", a / b);
+            break;
+        case 5: {
+            const double result = std::pow(a, b);
+            if (std::isnan(result)) std::cout << "Error: this power is not real-valued.\n";
+            else printResult("Result: ", result);
+            break;
+        }
+    }
+}
+
+void scientificFunctions() {
+    std::cout << "\n-- Scientific functions --\n"
+              << "1) sin  2) cos  3) tan  4) asin  5) acos  6) atan\n"
+              << "7) sqrt  8) ln  9) log10  10) factorial  11) absolute value\n"
+              << "12) degrees -> radians  13) radians -> degrees\n";
+    const int op = readInt("Choose function: ", 1, 13);
+    const double x = readDouble("Input value: ");
+    double result = 0.0;
+    switch (op) {
+        case 1: result = std::sin(x * PI / 180.0); break;
+        case 2: result = std::cos(x * PI / 180.0); break;
+        case 3:
+            if (std::abs(std::cos(x * PI / 180.0)) < EPS) {
+                std::cout << "Error: tangent is undefined at this angle.\n"; return;
+            }
+            result = std::tan(x * PI / 180.0); break;
+        case 4:
+            if (x < -1 || x > 1) { std::cout << "Error: asin input must be in [-1, 1].\n"; return; }
+            result = std::asin(x) * 180.0 / PI; break;
+        case 5:
+            if (x < -1 || x > 1) { std::cout << "Error: acos input must be in [-1, 1].\n"; return; }
+            result = std::acos(x) * 180.0 / PI; break;
+        case 6: result = std::atan(x) * 180.0 / PI; break;
+        case 7:
+            if (x < 0) { std::cout << "Error: square root requires a non-negative input.\n"; return; }
+            result = std::sqrt(x); break;
+        case 8:
+            if (x <= 0) { std::cout << "Error: ln requires a positive input.\n"; return; }
+            result = std::log(x); break;
+        case 9:
+            if (x <= 0) { std::cout << "Error: log10 requires a positive input.\n"; return; }
+            result = std::log10(x); break;
+        case 10: {
+            if (x < 0 || x > 170 || std::floor(x) != x) {
+                std::cout << "Error: factorial requires an integer from 0 to 170.\n"; return;
+            }
+            result = 1.0;
+            for (int i = 2; i <= static_cast<int>(x); ++i) result *= i;
+            break;
+        }
+        case 11: result = std::abs(x); break;
+        case 12: result = x * PI / 180.0; break;
+        case 13: result = x * 180.0 / PI; break;
+    }
+    printResult("Result: ", result);
+}
+
+void unitConversions() {
+    std::cout << "\n-- Unit conversions --\n"
+              << "1) Celsius -> Fahrenheit  2) Fahrenheit -> Celsius\n"
+              << "3) km/h -> m/s  4) m/s -> km/h\n"
+              << "5) meters -> feet  6) feet -> meters\n"
+              << "7) kilograms -> pounds  8) pounds -> kilograms\n"
+              << "9) bar -> pascal  10) pascal -> bar\n";
+    const int op = readInt("Choose conversion: ", 1, 10);
+    const double x = readDouble("Value: ");
+    double result = 0.0;
+    switch (op) {
+        case 1: result = x * 9.0 / 5.0 + 32.0; break;
+        case 2: result = (x - 32.0) * 5.0 / 9.0; break;
+        case 3: result = x / 3.6; break;
+        case 4: result = x * 3.6; break;
+        case 5: result = x * 3.280839895; break;
+        case 6: result = x / 3.280839895; break;
+        case 7: result = x * 2.204622622; break;
+        case 8: result = x / 2.204622622; break;
+        case 9: result = x * 100000.0; break;
+        case 10: result = x / 100000.0; break;
+    }
+    printResult("Converted value: ", result);
+}
+
+void statistics() {
+    std::cout << "\n-- Statistics --\n";
+    const int n = readInt("How many values (1-1000)? ", 1, 1000);
+    std::vector<double> values;
+    values.reserve(static_cast<std::size_t>(n));
+    for (int i = 0; i < n; ++i) {
+        values.push_back(readDouble("Value " + std::to_string(i + 1) + ": "));
+    }
+    const double sum = std::accumulate(values.begin(), values.end(), 0.0);
+    const double mean = sum / n;
+    std::vector<double> sorted = values;
+    std::sort(sorted.begin(), sorted.end());
+    const double median = (n % 2 == 0)
+        ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2.0
+        : sorted[n / 2];
+    double squaredDiffs = 0.0;
+    for (double value : values) squaredDiffs += (value - mean) * (value - mean);
+    const double populationVariance = squaredDiffs / n;
+    std::cout << std::setprecision(12)
+              << "Count: " << n << "\nSum: " << sum
+              << "\nMean: " << mean << "\nMedian: " << median
+              << "\nMinimum: " << sorted.front() << "\nMaximum: " << sorted.back()
+              << "\nPopulation variance: " << populationVariance
+              << "\nPopulation standard deviation: " << std::sqrt(populationVariance) << '\n';
+}
+
+void solveQuadratic() {
+    std::cout << "\n-- Quadratic equation: ax^2 + bx + c = 0 --\n";
+    const double a = readDouble("a: ");
+    const double b = readDouble("b: ");
+    const double c = readDouble("c: ");
+    if (nearlyZero(a)) {
+        if (nearlyZero(b)) {
+            std::cout << (nearlyZero(c) ? "Every real number is a solution.\n"
+                                       : "No solution exists.\n");
+        } else {
+            printResult("Linear solution x = ", -c / b);
+        }
+        return;
+    }
+    const double discriminant = b * b - 4.0 * a * c;
+    if (discriminant > EPS) {
+        const double root = std::sqrt(discriminant);
+        printResult("x1 = ", (-b + root) / (2.0 * a));
+        printResult("x2 = ", (-b - root) / (2.0 * a));
+    } else if (nearlyZero(discriminant)) {
+        printResult("Repeated root x = ", -b / (2.0 * a));
+    } else {
+        const double real = -b / (2.0 * a);
+        const double imag = std::sqrt(-discriminant) / std::abs(2.0 * a);
+        std::cout << std::setprecision(12) << "Complex roots: "
+                  << real << " + " << imag << "i, "
+                  << real << " - " << imag << "i\n";
+    }
+}
+
+void ohmsLaw() {
+    std::cout << "\n-- Ohm's law --\n"
+              << "1) Calculate voltage (V = I * R)\n"
+              << "2) Calculate current (I = V / R)\n"
+              << "3) Calculate resistance (R = V / I)\n";
+    const int op = readInt("Choose calculation: ", 1, 3);
+    double result = 0.0;
+    if (op == 1) {
+        const double current = readDouble("Current in amperes (A): ");
+        const double resistance = readDouble("Resistance in ohms (Ohm): ");
+        result = current * resistance;
+        printResult("Voltage (V): ", result);
+    } else if (op == 2) {
+        const double voltage = readDouble("Voltage in volts (V): ");
+        const double resistance = readDouble("Resistance in ohms (Ohm): ");
+        if (nearlyZero(resistance)) { std::cout << "Error: resistance cannot be zero.\n"; return; }
+        result = voltage / resistance;
+        printResult("Current (A): ", result);
+    } else {
+        const double voltage = readDouble("Voltage in volts (V): ");
+        const double current = readDouble("Current in amperes (A): ");
+        if (nearlyZero(current)) { std::cout << "Error: current cannot be zero.\n"; return; }
+        result = voltage / current;
+        printResult("Resistance (Ohm): ", result);
+    }
+}
+
+void showMenu() {
+    std::cout << "\n====================================\n"
+              << "      ENGINEERING CALCULATOR\n"
+              << "====================================\n"
+              << "1. Basic arithmetic\n"
+              << "2. Scientific functions\n"
+              << "3. Unit conversions\n"
+              << "4. Statistics (mean, median, variance)\n"
+              << "5. Solve quadratic equation\n"
+              << "6. Ohm's law\n"
+              << "0. Exit\n";
+}
+} // namespace
+
+int main() {
+    std::cout << "Engineering Calculator v1.0 | C++17\n";
+    while (true) {
+        showMenu();
+        const int choice = readInt("Select an option: ", 0, 6);
+        switch (choice) {
+            case 1: basicArithmetic(); break;
+            case 2: scientificFunctions(); break;
+            case 3: unitConversions(); break;
+            case 4: statistics(); break;
+            case 5: solveQuadratic(); break;
+            case 6: ohmsLaw(); break;
+            case 0:
+                std::cout << "Goodbye.\n";
+                return 0;
+        }
+    }
+}
